@@ -1,0 +1,123 @@
+{
+  "schema_version": 1,
+  "project": {
+    "name": "pgms",
+    "stack": "ASP.NET Core 10 LTS Razor Pages + Blazor interactive components, EF Core 10, SQLite, ASP.NET Identity cookie auth, Tailwind CSS, xUnit + Moq"
+  },
+  "requirements": {
+    "mode": "documented",
+    "roots": ["Docs/knowledge"],
+    "id_patterns": ["US-[A-Z0-9-]+", "UC-[A-Z0-9-]+", "AC-[A-Z0-9-]+", "NFR-[A-Z0-9-]+", "CTRL-[A-Z0-9-]+", "ADR-[A-Z0-9-]+"],
+    "allow_inferred": true,
+    "trace_file": "Docs/knowledge/trace/links.yml"
+  },
+  "architecture": {
+    "layer_map": {
+      "domain": ["src/PGMS.Domain/**"],
+      "data": ["src/PGMS.Data/**"],
+      "infrastructure": ["src/PGMS.Infrastructure/**"],
+      "web": ["src/PGMS.Web/**"],
+      "tests": ["tests/PGMS.Tests/**"]
+    },
+    "shared_conflict_paths": [
+      "src/PGMS.Web/Program.cs",
+      "src/PGMS.Infrastructure/Migrations/",
+      "src/PGMS.Data/Migrations/",
+      "tests/PGMS.Tests/"
+    ],
+    "doc": "Docs/knowledge/architecture"
+  },
+  "repo": {
+    "include_roots": ["src", "tests", "tools"],
+    "exclude_globs": ["**/bin/**", "**/obj/**", "**/node_modules/**", "**/*.min.*", "**/Migrations/*.Designer.cs", "**/.git/**"]
+  },
+  "app": {
+    "start_cmd": "dotnet run --project src/PGMS.Web --urls http://localhost:{port}",
+    "health_url": "http://localhost:{port}/",
+    "auth_fixture": "seeded dev accounts via DataSeeder (non-production guard)"
+  },
+  "gates": {
+    "commands": [
+      { "id": "build", "cmd": "dotnet build --nologo -warnaserror", "timeout_s": 600, "required": true },
+      { "id": "test", "cmd": "dotnet test --nologo", "timeout_s": 1200, "required": true },
+      { "id": "knowledge-check", "cmd": "dotnet run --project tools/PGMS.Knowledge -- check", "timeout_s": 300, "required": false }
+    ],
+    "per_mode": {
+      "code-quality": [
+        { "id": "format", "cmd": "dotnet format --verify-no-changes", "timeout_s": 300, "required": false }
+      ]
+    }
+  },
+  "worktree": {
+    "db_template": "pgms.worktree.db",
+    "port_range": [5600, 5999],
+    "seed_cmd": "dotnet ef database update --project src/PGMS.Infrastructure --startup-project src/PGMS.Web",
+    "env_file": ".worktree-env"
+  },
+  "tracker": {
+    "adapter": "beads",
+    "commands": {
+      "create": "bd create --title=\"{title}\" --type={type} --spec-id={spec_id} --parent={parent}",
+      "update": "bd update {id} {args}",
+      "close": "bd close {id}",
+      "dep": "bd dep add {id} {depends_on}",
+      "comment": "bd comments add {id} \"{text}\"",
+      "show": "bd show {id}"
+    },
+    "epic_pattern": "{project}-swarm-{run}"
+  },
+  "models": {
+    "auditor": "cursor-grok-4.6-high",
+    "critic": "cursor-grok-4.6-high",
+    "architect": "cursor-grok-4.6-high",
+    "owner": "inherit",
+    "solution_architect": "cursor-grok-4.6-high",
+    "implementer": "composer-2.5[fast=false]"
+  },
+  "mcp": {
+    "graphify": true,
+    "sonar": {
+      "enabled": true,
+      "project_key": "Sanveer-Singh_UJ-PostGraduate-Management-System--Asp-",
+      "org": "sanveer-singh"
+    },
+    "context7": true,
+    "perplexity": true,
+    "browser": true,
+    "figma": true
+  },
+  "paths": {
+    "run_root": "Docs/swarm-audit/runs",
+    "plans_root": "Docs/swarm-audit/plans",
+    "registries": "Docs/swarm-audit/registries",
+    "toolkit": "Docs/swarm-audit/toolkit"
+  },
+  "caps": {
+    "max_live_agents": 8,
+    "max_writers": 2,
+    "max_worktrees": 10,
+    "plan_revise_rounds": 2,
+    "remediation_batches": 1,
+    "decomposition": { "depth": 2, "fanout": 4, "global": 30, "branch": 4 },
+    "atomic_thresholds": {
+      "max_requirements": 3,
+      "max_layers": 2,
+      "max_shared": 1,
+      "max_migrations": 1,
+      "max_acs": 8,
+      "max_security": 1
+    },
+    "stage_timeouts_m": { "audit": 25, "plan": 30, "implement": 45, "ui": 25, "owner_course": 120 }
+  },
+  "modes": {
+    "default": ["faithfulness", "ui-ux", "code-quality", "architecture", "security"]
+  },
+  "orchestration": { "tier": "owner", "decomposition": "shadow" },
+  "budgets": {
+    "run": { "max_agents": 150, "max_hours": 12 },
+    "per_task": { "owner_attempts": 2, "evidence_refreshes": 2, "architect_consults": 2, "replans": 1 }
+  },
+  "checkpoints": { "human": ["before_integrate", "security_decisions"] },
+  "security": { "rule_pack": ".cursor/rules/pgms-core-immutable.mdc" },
+  "ui": { "style_guide": "AGENTS.md", "wcag_level": "AA" }
+}

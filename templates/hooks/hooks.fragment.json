@@ -1,0 +1,18 @@
+{
+  "_comment": "swarm-audit hook fragment. install.py three-way merges these entries into .cursor/hooks.json (Cursor's hook config path), never replacing existing hooks. Marker key swarm_audit_version drives uninstall.",
+  "swarm_audit_version": 1,
+  "hooks": {
+    "subagentStart": [
+      { "command": "python .cursor/hooks/swarm/subagent_start.py" }
+    ],
+    "subagentStop": [
+      { "command": "python .cursor/hooks/swarm/subagent_stop.py" }
+    ],
+    "preToolUse": [
+      { "matcher": "Shell", "command": "python .cursor/hooks/swarm/before_shell.py" }
+    ],
+    "beforeMCPExecution": [
+      { "command": "python .cursor/hooks/swarm/before_mcp.py" }
+    ]
+  }
+}

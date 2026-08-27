@@ -1,0 +1,228 @@
+{
+  "_registry_version": 1,
+  "_comment": "Artifact registry: every persisted artifact kind declares version, producer, consumer, required and optional fields. validate_payload.py enforces required presence and rejects unknown fields. Enum legality is enforced in code (validate_payload.py) against swarm_lib enums.",
+
+  "packet": {
+    "version": 1,
+    "producer": "orchestrator (packet_build.py) or owner (stage packets, persisted by orchestrator from course report)",
+    "consumer": "spawned agent",
+    "required": ["run_id", "agent_role", "goal", "non_goals", "requirement_ids", "requirement_text", "base_commit", "allowed_paths", "forbidden_paths", "commands", "budgets", "output_kind", "attempt", "packet_path", "capability_manifest"],
+    "optional": ["mode", "task_id", "plan_sha256", "addendum_sha256", "worktree", "app_url", "port", "expected_model", "mode_pack", "finding_cluster", "evidence_refs", "tracker_snapshot"]
+  },
+
+  "audit_payload": {
+    "version": 1,
+    "producer": "swarm-auditor",
+    "consumer": "orchestrator (dedupe, coverage gate)",
+    "required": ["coverage_rows", "findings"],
+    "optional": ["mode", "partition_id", "notes"]
+  },
+
+  "finding": {
+    "version": 1,
+    "producer": "swarm-auditor",
+    "consumer": "orchestrator (dedupe, clusters)",
+    "required": ["mode", "requirement_ids", "issue", "impact", "offending_lines", "affected_files", "affected_features", "evidence_level", "evidence_refs", "fingerprint", "proposed_minimal_fix", "confidence"],
+    "optional": ["gap_class", "symbol", "remediation_class", "inferred_provenance", "severity"]
+  },
+
+  "coverage_row": {
+    "version": 1,
+    "producer": "swarm-auditor",
+    "consumer": "orchestrator (coverage gate)",
+    "required": ["requirement_id", "classification", "evidence_refs"],
+    "optional": ["mode", "notes", "needs_human"]
+  },
+
+  "decomposition_manifest": {
+    "version": 1,
+    "producer": "swarm-architect (proposal); orchestrator persists",
+    "consumer": "atomicity.py, conflict_graph.py, packet_build.py",
+    "required": ["cluster_id", "requirement_ids", "finding_fingerprints", "proposed_paths", "layers", "ac_count", "migration_count", "security_surfaces", "evidence_provenance", "depends_on"],
+    "optional": ["shared_contract_hits", "migration_details", "severity", "mode"]
+  },
+
+  "frozen_plan": {
+    "version": 1,
+    "producer": "swarm-planner; orchestrator freezes with hash",
+    "consumer": "swarm-red-team (plan), swarm-implementer, course_verify.py",
+    "required": ["task_id", "diagnosis", "decision", "tests_first", "allowed_paths", "forbidden_paths", "acceptance", "blast_radius", "security_surfaces", "rejected_alternatives", "commands"],
+    "optional": ["plan_sha256", "revision", "requirement_ids"]
+  },
+
+  "red_team_verdict": {
+    "version": 1,
+    "producer": "swarm-red-team (fresh per round)",
+    "consumer": "owner course; orchestrator (ledger/admission)",
+    "required": ["mode", "verdict", "findings", "attempt"],
+    "optional": ["task_id", "plan_sha256", "addendum_sha256", "notes", "checked"]
+  },
+
+  "impl_result": {
+    "version": 1,
+    "producer": "swarm-implementer",
+    "consumer": "owner course; course_verify.py",
+    "required": ["plan_sha256", "files_changed", "tests_added", "commands_run", "results"],
+    "optional": ["task_id", "deviations", "addendum_sha256", "mode"]
+  },
+
+  "ui_review": {
+    "version": 1,
+    "producer": "swarm-ui-red-team",
+    "consumer": "owner course; orchestrator (close checklist)",
+    "required": ["verdict", "disposition", "checks_run", "findings", "app_boot_receipt"],
+    "optional": ["task_id", "failure_class", "missing_evidence", "screenshots_refs", "notes"]
+  },
+
+  "course_report": {
+    "version": 1,
+    "producer": "swarm-owner",
+    "consumer": "course_verify.py",
+    "required": ["task_id", "plan_sha256", "stage_receipts", "red_team_rounds", "fingerprints_raised", "fingerprints_resolved", "diff_summary", "tests", "ui_disposition", "blockers", "residual_risks", "status"],
+    "optional": ["addendum_sha256", "notes"]
+  },
+
+  "proposal": {
+    "version": 1,
+    "producer": "swarm-solution-architect",
+    "consumer": "orchestrator (unblocking)",
+    "required": ["question_id", "options", "recommendation", "research_receipts"],
+    "optional": ["needs_human", "task_ids"]
+  },
+
+  "gate_receipt": {
+    "version": 1,
+    "producer": "orchestrator (gates.py)",
+    "consumer": "phase gates, close checklist",
+    "required": ["gate_id", "cmd", "commit", "exit_code", "summary", "at"],
+    "optional": ["plan_sha256", "addendum_sha256", "timeout", "cwd", "dry_run", "required"]
+  },
+
+  "run_state": {
+    "version": 1,
+    "producer": "orchestrator (run_state.py)",
+    "consumer": "all scripts; resume",
+    "required": ["run_id", "phase", "next_action", "base_commit", "status", "modes", "tier"],
+    "optional": ["epic", "tasks", "mode_waves_done", "wave_index", "notes"]
+  },
+
+  "req_index": {
+    "version": 1,
+    "producer": "orchestrator (intake.py)",
+    "consumer": "partition.py, packet_build.py",
+    "required": ["mode", "generated_at", "rows"],
+    "optional": ["roots", "inferred_allowed", "waiver"]
+  },
+
+  "req_index_row": {
+    "version": 1,
+    "producer": "intake.py",
+    "consumer": "partition.py, packet_build.py",
+    "required": ["requirement_id", "source", "text"],
+    "optional": ["kind", "inferred_provenance"]
+  },
+
+  "cluster": {
+    "version": 1,
+    "producer": "orchestrator (fingerprint.py dedupe)",
+    "consumer": "swarm-architect, packet_build.py",
+    "required": ["cluster_id", "root_cause", "requirement_ids", "finding_fingerprints", "issue_type", "modes", "evidence_level"],
+    "optional": ["severity", "affected_files", "notes"]
+  },
+
+  "decomposition_queue": {
+    "version": 1,
+    "producer": "orchestrator (queue_state.py)",
+    "consumer": "queue_state.py",
+    "required": ["pending", "budget_global_remaining", "nodes"],
+    "optional": ["notes"]
+  },
+
+  "ledger_row": {
+    "version": 1,
+    "producer": "orchestrator (from collect payloads)",
+    "consumer": "swarm-red-team (admission)",
+    "required": ["source", "rule_or_requirement_id", "files", "root_cause", "proposed_minimal_fix", "fingerprint"],
+    "optional": ["symbol", "security_surfaces", "data_migration_impact", "callers_dependants", "ui_api_behavior_impact", "tests_requiring_add_or_change", "allowed_paths", "evidence_level"]
+  },
+
+  "admission_row": {
+    "version": 1,
+    "producer": "swarm-red-team (mode=admission)",
+    "consumer": "orchestrator (addendum build)",
+    "required": ["fingerprint", "admission", "reason"],
+    "optional": ["task_id", "evidence_refs"]
+  },
+
+  "addendum": {
+    "version": 1,
+    "producer": "orchestrator (from admission rows)",
+    "consumer": "swarm-implementer (remediate), swarm-red-team (delta)",
+    "required": ["task_id", "plan_sha256", "addendum_sha256", "approved_fingerprints", "allowed_paths", "required_tests"],
+    "optional": []
+  },
+
+  "preflight_receipt": {
+    "version": 1,
+    "producer": "orchestrator (preflight.py)",
+    "consumer": "init gate, installer",
+    "required": ["at", "config_valid", "checks", "passed"],
+    "optional": ["notes", "install_check"]
+  },
+
+  "verification_receipt": {
+    "version": 1,
+    "producer": "orchestrator (course_verify.py)",
+    "consumer": "verify gate, close checklist",
+    "required": ["task_id", "course_report_ref", "checks", "passed", "at"],
+    "optional": ["failures", "plan_sha256", "addendum_sha256"]
+  },
+
+  "integration_receipt": {
+    "version": 1,
+    "producer": "orchestrator",
+    "consumer": "close checklist",
+    "required": ["task_id", "merge_commit", "gates_receipt_ref", "at"],
+    "optional": ["conflicts"]
+  },
+
+  "closure_receipt": {
+    "version": 1,
+    "producer": "orchestrator",
+    "consumer": "close phase",
+    "required": ["task_id", "tracker_id", "plan_sha256", "commit", "checklist", "at"],
+    "optional": ["noop", "notes"]
+  },
+
+  "journal_entry": {
+    "version": 1,
+    "producer": "orchestrator (journal.py)",
+    "consumer": "journal.py reconcile",
+    "required": ["idempotency_key", "intent", "status", "at"],
+    "optional": ["external_id", "result", "completed_at", "reconcile_note", "task_id"]
+  },
+
+  "budget_state": {
+    "version": 1,
+    "producer": "orchestrator (budgets in run folder)",
+    "consumer": "all recovery transitions",
+    "required": ["run", "per_task"],
+    "optional": ["updated_at"]
+  },
+
+  "tracker_result": {
+    "version": 1,
+    "producer": "tracker.py",
+    "consumer": "orchestrator, journal",
+    "required": ["action", "ok"],
+    "optional": ["id", "stdout_tail", "stderr_tail", "exit_code", "registry_row"]
+  },
+
+  "final_report": {
+    "version": 1,
+    "producer": "orchestrator (close)",
+    "consumer": "humans",
+    "required": ["run_id", "modes_run", "tasks_total", "tasks_closed", "tasks_blocked", "human_queue_open", "at"],
+    "optional": ["leftovers", "budget_spent", "notes"]
+  }
+}

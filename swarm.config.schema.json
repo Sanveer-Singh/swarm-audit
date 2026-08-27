@@ -1,0 +1,316 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "swarm-audit/swarm.config.schema.json",
+  "title": "Swarm Audit project adapter config",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "project", "requirements", "architecture", "gates", "tracker", "models", "mcp", "paths", "caps", "modes", "orchestration", "budgets"],
+  "properties": {
+    "schema_version": { "type": "integer", "const": 1 },
+    "project": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "stack"],
+      "properties": {
+        "name": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+        "stack": { "type": "string", "minLength": 1 }
+      }
+    },
+    "requirements": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "roots", "id_patterns"],
+      "properties": {
+        "mode": { "enum": ["documented", "code_contracts", "none"] },
+        "roots": { "type": "array", "items": { "type": "string" } },
+        "id_patterns": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": ["US-[A-Z0-9-]+", "UC-[A-Z0-9-]+", "BR-[A-Z0-9-]+", "NFR-[A-Z0-9-]+", "AC-[A-Z0-9-]+"]
+        },
+        "allow_inferred": { "type": "boolean", "default": true },
+        "trace_file": { "type": "string" }
+      }
+    },
+    "architecture": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["layer_map", "shared_conflict_paths"],
+      "properties": {
+        "layer_map": {
+          "type": "object",
+          "additionalProperties": { "type": "array", "items": { "type": "string" } }
+        },
+        "shared_conflict_paths": { "type": "array", "items": { "type": "string" } },
+        "doc": { "type": "string" }
+      }
+    },
+    "repo": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "include_roots": { "type": "array", "items": { "type": "string" }, "default": ["."] },
+        "exclude_globs": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": ["**/node_modules/**", "**/bin/**", "**/obj/**", "**/dist/**", "**/*.min.*", "**/Migrations/**.Designer.cs", "**/.git/**"]
+        },
+        "workspaces": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "root"],
+            "properties": {
+              "name": { "type": "string" },
+              "root": { "type": "string" },
+              "bootstrap_cmd": { "type": "string" },
+              "test_cmd": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "app": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "bootstrap_cmd": { "type": "string" },
+        "start_cmd": { "type": "string" },
+        "health_url": { "type": "string" },
+        "auth_fixture": { "type": "string" }
+      }
+    },
+    "gates": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["commands"],
+      "properties": {
+        "commands": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "cmd"],
+            "properties": {
+              "id": { "type": "string" },
+              "cmd": { "type": "string" },
+              "cwd": { "type": "string", "default": "." },
+              "timeout_s": { "type": "integer", "default": 600, "minimum": 1 },
+              "required": { "type": "boolean", "default": true }
+            }
+          }
+        },
+        "per_mode": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": { "type": "object" }
+          }
+        }
+      }
+    },
+    "worktree": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "setup_script": { "type": "string" },
+        "db_template": { "type": "string" },
+        "port_range": {
+          "type": "array",
+          "items": { "type": "integer" },
+          "minItems": 2,
+          "maxItems": 2,
+          "default": [5600, 5999]
+        },
+        "seed_cmd": { "type": "string" },
+        "env_file": { "type": "string", "default": ".worktree-env" }
+      }
+    },
+    "tracker": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["adapter"],
+      "properties": {
+        "adapter": { "enum": ["beads", "none", "custom"] },
+        "commands": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "create": { "type": "string" },
+            "update": { "type": "string" },
+            "close": { "type": "string" },
+            "dep": { "type": "string" },
+            "comment": { "type": "string" },
+            "show": { "type": "string" }
+          }
+        },
+        "epic_pattern": { "type": "string", "default": "{project}-swarm-{run}" }
+      }
+    },
+    "models": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["implementer"],
+      "properties": {
+        "auditor": { "type": "string", "default": "inherit" },
+        "critic": { "type": "string", "default": "inherit" },
+        "architect": { "type": "string", "default": "inherit" },
+        "owner": { "type": "string", "default": "inherit" },
+        "solution_architect": { "type": "string", "default": "inherit" },
+        "implementer": { "type": "string" }
+      }
+    },
+    "mcp": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "graphify": { "type": "boolean", "default": false },
+        "sonar": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": { "type": "boolean", "default": false },
+            "project_key": { "type": "string" },
+            "org": { "type": "string" }
+          }
+        },
+        "context7": { "type": "boolean", "default": false },
+        "perplexity": { "type": "boolean", "default": false },
+        "browser": { "type": "boolean", "default": false },
+        "figma": { "type": "boolean", "default": false }
+      }
+    },
+    "paths": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["run_root", "plans_root", "registries"],
+      "properties": {
+        "run_root": { "type": "string", "default": "Docs/swarm-audit/runs" },
+        "plans_root": { "type": "string", "default": "Docs/swarm-audit/plans" },
+        "registries": { "type": "string", "default": "Docs/swarm-audit/registries" },
+        "toolkit": { "type": "string", "default": "Docs/swarm-audit/toolkit" }
+      }
+    },
+    "caps": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "max_live_agents": { "type": "integer", "default": 8, "minimum": 1 },
+        "max_writers": { "type": "integer", "default": 2, "minimum": 1 },
+        "max_worktrees": { "type": "integer", "default": 10, "minimum": 1 },
+        "plan_revise_rounds": { "type": "integer", "default": 2, "minimum": 0 },
+        "remediation_batches": { "type": "integer", "default": 1, "minimum": 0, "maximum": 1 },
+        "decomposition": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "depth": { "type": "integer", "default": 2 },
+            "fanout": { "type": "integer", "default": 4 },
+            "global": { "type": "integer", "default": 30 },
+            "branch": { "type": "integer", "default": 4 }
+          }
+        },
+        "atomic_thresholds": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "max_requirements": { "type": "integer", "default": 3 },
+            "max_layers": { "type": "integer", "default": 2 },
+            "max_shared": { "type": "integer", "default": 1 },
+            "max_migrations": { "type": "integer", "default": 1 },
+            "max_acs": { "type": "integer", "default": 8 },
+            "max_security": { "type": "integer", "default": 1 }
+          }
+        },
+        "stage_timeouts_m": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "audit": { "type": "integer", "default": 25 },
+            "plan": { "type": "integer", "default": 30 },
+            "implement": { "type": "integer", "default": 45 },
+            "ui": { "type": "integer", "default": 25 },
+            "owner_course": { "type": "integer", "default": 120 }
+          }
+        }
+      }
+    },
+    "modes": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "default": {
+          "type": "array",
+          "items": { "enum": ["faithfulness", "ui-ux", "code-quality", "architecture", "security"] },
+          "default": ["faithfulness", "ui-ux", "code-quality", "architecture", "security"]
+        }
+      }
+    },
+    "orchestration": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "tier": { "enum": ["owner", "flat"], "default": "owner" },
+        "decomposition": {
+          "enum": ["shadow", "gating"],
+          "default": "shadow",
+          "description": "shadow = atomicity guards are advisory-only (D28 default until per-project calibration); gating = guards authorize splits"
+        }
+      }
+    },
+    "budgets": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["run"],
+      "properties": {
+        "run": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["max_agents", "max_hours"],
+          "properties": {
+            "max_agents": { "type": "integer", "minimum": 1 },
+            "max_est_tokens": { "type": "integer" },
+            "max_cost": { "type": "number" },
+            "max_hours": { "type": "number", "minimum": 0.1 }
+          }
+        },
+        "per_task": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "owner_attempts": { "type": "integer", "default": 2 },
+            "evidence_refreshes": { "type": "integer", "default": 2 },
+            "architect_consults": { "type": "integer", "default": 2 },
+            "replans": { "type": "integer", "default": 1 }
+          }
+        }
+      }
+    },
+    "checkpoints": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "human": {
+          "type": "array",
+          "items": { "enum": ["before_implement", "before_integrate", "security_decisions"] },
+          "default": []
+        }
+      }
+    },
+    "security": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": { "rule_pack": { "type": "string" } }
+    },
+    "ui": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "style_guide": { "type": "string" },
+        "wcag_level": { "enum": ["A", "AA", "AAA"], "default": "AA" }
+      }
+    }
+  }
+}
